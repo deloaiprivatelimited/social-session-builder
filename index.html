@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Session Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── RESET & BASE ─────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;
+  --surface:#13161e;
+  --card:#1a1d27;
+  --card2:#1f2330;
+  --border:#272b3a;
+  --accent:#f0a500;
+  --accent2:#e05c2a;
+  --text:#e8eaf0;
+  --muted:#6b7280;
+  --merge:#7c5cbf;
+  --merge-bg:#1e1a2e;
+  --danger:#e05c2a;
+  --green:#2ea87e;
+  --r:10px;
+  --r2:6px;
+}
+html{font-size:15px;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+body{display:flex;flex-direction:column;min-height:100vh}
+
+/* ── LAYOUT ───────────────────────────────────── */
+header{
+  display:flex;align-items:center;gap:14px;
+  padding:18px 28px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
+}
+header .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--accent);letter-spacing:-.5px}
+header .logo span{color:var(--text)}
+header nav{margin-left:auto;display:flex;gap:8px}
+
+.main{display:grid;grid-template-columns:340px 1fr;gap:0;flex:1;overflow:hidden;height:calc(100vh - 61px)}
+
+/* ── SIDEBAR (left) ───────────────────────────── */
+.sidebar{
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sidebar-header{
+  padding:16px 18px 12px;
+  border-bottom:1px solid var(--border);
+}
+.sidebar-header h2{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+.filter-row{display:flex;flex-direction:column;gap:8px;padding:14px 18px;border-bottom:1px solid var(--border)}
+select,input[type=text]{
+  width:100%;background:var(--card);border:1px solid var(--border);
+  color:var(--text);padding:9px 12px;border-radius:var(--r2);font-size:.88rem;font-family:inherit;
+  outline:none;transition:border-color .2s;
+}
+select:focus,input:focus{border-color:var(--accent)}
+select option{background:var(--card)}
+
+.chapter-list{padding:10px 18px;display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto}
+.chapter-list label{display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer;padding:5px 6px;border-radius:var(--r2);transition:background .15s}
+.chapter-list label:hover{background:var(--card)}
+.chapter-list input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px}
+
+.module-pool{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:5px}
+.pool-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:4px 6px;font-family:'DM Mono',monospace}
+
+/* ── MODULE CARD ─────────────────────────────── */
+.mod-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r2);
+  padding:9px 12px;cursor:grab;user-select:none;
+  display:flex;align-items:flex-start;gap:8px;
+  transition:border-color .15s,transform .1s,box-shadow .15s;
+  position:relative;
+}
+.mod-card:hover{border-color:var(--accent);box-shadow:0 2px 12px #f0a50020}
+.mod-card.dragging{opacity:.4;transform:scale(.97)}
+.mod-card.drag-over{border-color:var(--accent);background:var(--card2)}
+.mod-card .drag-handle{color:var(--muted);font-size:.9rem;padding-top:1px;flex-shrink:0}
+.mod-card .mod-info{flex:1;min-width:0}
+.mod-card .mod-num{font-size:.7rem;color:var(--accent);font-family:'DM Mono',monospace;font-weight:500}
+.mod-card .mod-head{font-size:.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.mod-card .mod-chapter{font-size:.72rem;color:var(--muted);margin-top:2px}
+.mod-card .mod-actions{display:flex;gap:4px;flex-shrink:0}
+
+/* Merged card style */
+.mod-card.merged{
+  border-color:var(--merge);
+  background:var(--merge-bg);
+}
+.mod-card.merged .mod-num{color:var(--merge)}
+.merge-badge{
+  font-size:.65rem;background:var(--merge);color:#fff;
+  border-radius:3px;padding:1px 5px;font-family:'DM Mono',monospace;
+  display:inline-block;margin-right:4px;
+}
+
+/* ── BUILDER (right) ─────────────────────────── */
+.builder{
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--bg);
+}
+.builder-top{
+  padding:18px 24px 14px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.builder-top h1{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;flex:1}
+
+.session-input-row{display:flex;gap:10px;align-items:center;width:100%}
+.session-input-row input{flex:1}
+.session-input-row textarea{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--r2);font-family:inherit;font-size:.88rem;resize:none;outline:none;min-height:38px}
+.session-input-row textarea:focus{border-color:var(--accent)}
+
+.drop-zone{
+  flex:1;overflow-y:auto;
+  padding:16px;
+  display:flex;flex-direction:column;gap:8px;
+  min-height:200px;
+}
+.drop-zone.empty-hint::after{
+  content:'Drop modules here ↑';
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:.9rem;
+  border:2px dashed var(--border);border-radius:var(--r);
+  padding:48px;margin:8px 0;opacity:.5;
+}
+.drop-zone.drag-active{border:2px dashed var(--accent);background:#f0a5000a;border-radius:var(--r)}
+
+.session-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 14px;display:flex;align-items:flex-start;gap:10px;
+  transition:border-color .15s,box-shadow .15s;
+}
+.session-card:hover{border-color:#3a3f52;box-shadow:0 2px 10px #0006}
+.session-card .pos{
+  min-width:26px;height:26px;border-radius:50%;
+  background:var(--border);color:var(--muted);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-family:'DM Mono',monospace;flex-shrink:0;
+}
+.session-card.is-merge{border-color:var(--merge)}
+.session-card.is-merge .pos{background:var(--merge);color:#fff}
+.session-card .sc-info{flex:1;min-width:0}
+.session-card .sc-heading{font-weight:500;font-size:.88rem;margin-bottom:2px}
+.session-card .sc-meta{font-size:.75rem;color:var(--muted)}
+.session-card .sc-actions{display:flex;gap:5px;flex-shrink:0}
+
+/* Merge selector overlay */
+.merge-select-zone{
+  background:var(--merge-bg);border:1.5px dashed var(--merge);
+  border-radius:var(--r);padding:12px 14px;
+  display:none;flex-direction:column;gap:8px;
+}
+.merge-select-zone.open{display:flex}
+.merge-select-zone h4{font-family:'Syne',sans-serif;font-size:.85rem;color:var(--merge)}
+.merge-checklist{display:flex;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto}
+.merge-checklist label{display:flex;align-items:center;gap:8px;font-size:.83rem;cursor:pointer;padding:5px 8px;border-radius:var(--r2)}
+.merge-checklist label:hover{background:#ffffff08}
+.merge-checklist input{accent-color:var(--merge);width:14px;height:14px}
+.merge-heading-input{background:var(--card);border:1px solid var(--merge);border-radius:var(--r2);padding:8px 12px;color:var(--text);font-size:.85rem;width:100%;outline:none;font-family:inherit}
+.merge-heading-input:focus{border-color:#a07de0}
+
+/* ── BUTTONS ─────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:var(--r2);font-size:.85rem;font-weight:500;
+  border:none;cursor:pointer;transition:all .15s;font-family:inherit;
+}
+.btn-primary{background:var(--accent);color:#000}
+.btn-primary:hover{background:#ffc234}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:#444}
+.btn-danger{background:transparent;color:var(--danger);border:1px solid transparent}
+.btn-danger:hover{background:#e05c2a18;border-color:var(--danger)}
+.btn-merge{background:var(--merge-bg);color:var(--merge);border:1px solid var(--merge)}
+.btn-merge:hover{background:#2a1f44}
+.btn-sm{padding:5px 10px;font-size:.78rem;border-radius:4px}
+.btn-icon{padding:5px 7px;border-radius:4px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:.85rem;transition:all .15s}
+.btn-icon:hover{background:var(--card2);color:var(--text)}
+
+/* ── SESSIONS LIST PANEL ─────────────────────── */
+.sessions-panel{
+  position:fixed;right:0;top:0;height:100vh;width:380px;
+  background:var(--surface);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .25s ease;
+  z-index:200;
+}
+.sessions-panel.open{transform:translateX(0)}
+.sessions-panel-header{
+  padding:18px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sessions-panel-header h2{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem}
+.sessions-list{flex:1;overflow-y:auto;padding:10px}
+.session-item{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:12px 14px;margin-bottom:8px;cursor:pointer;
+  transition:border-color .15s;
+}
+.session-item:hover{border-color:var(--accent)}
+.session-item h3{font-size:.9rem;font-weight:600;margin-bottom:4px}
+.session-item .si-meta{font-size:.78rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.session-item .si-actions{display:flex;gap:6px;margin-top:8px}
+
+/* ── TOAST ───────────────────────────────────── */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:500;
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:var(--r);padding:12px 18px;font-size:.88rem;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 8px 32px #0008;transform:translateY(100px);opacity:0;
+  transition:all .3s;pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:var(--green)}
+.toast.error{border-color:var(--danger)}
+.toast-icon{font-size:1rem}
+
+/* ── SCROLLBAR ───────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#2a2f42;border-radius:3px}
+
+/* ── OVERLAY ─────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:#00000060;z-index:150;display:none}
+.overlay.open{display:block}
+
+/* ── LOADING ─────────────────────────────────── */
+.loading{color:var(--muted);font-size:.85rem;padding:16px;text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Session<span>Builder</span></div>
+  <nav>
+    <button class="btn btn-ghost btn-sm" onclick="openSessions()">📋 Saved Sessions</button>
+    <button class="btn btn-merge btn-sm" onclick="toggleMergeMode()" id="mergeToggleBtn">⊕ Merge Mode</button>
+  </nav>
+</header>
+
+<div class="main">
+
+  <!-- ── SIDEBAR ────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>Module Library</h2>
+    </div>
+
+    <div class="filter-row">
+      <select id="classSelect" onchange="onClassChange()">
+        <option value="">Select Class…</option>
+      </select>
+    </div>
+
+    <div class="chapter-list" id="chapterList">
+      <div class="loading" id="chapterPlaceholder">← Select a class first</div>
+    </div>
+
+    <div style="padding:10px 18px;border-top:1px solid var(--border)">
+      <button class="btn btn-ghost btn-sm" style="width:100%" onclick="loadModules()">Load Modules</button>
+    </div>
+
+    <div class="module-pool" id="modulePool">
+      <div class="loading">Select class + chapters, then click Load Modules</div>
+    </div>
+  </aside>
+
+  <!-- ── BUILDER ────────────────────────────── -->
+  <section class="builder">
+
+    <div class="builder-top">
+      <h1>🗂 Session Builder</h1>
+      <div class="session-input-row">
+        <input type="text" id="sessionName" placeholder="Session name e.g. Ancient History Ch3"/>
+        <textarea id="sessionDesc" placeholder="Description (optional)" rows="1"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-left:auto">
+        <button class="btn btn-ghost btn-sm" onclick="clearSession()">🗑 Clear</button>
+        <button class="btn btn-primary btn-sm" onclick="saveSession()">💾 Save Session</button>
+      </div>
+    </div>
+
+    <!-- Merge Mode panel -->
+    <div id="mergeModeBar" class="merge-select-zone" style="margin:12px 16px 0;border-radius:var(--r)">
+      <h4>⊕ Merge Mode — select modules from the drop zone below, then click Merge</h4>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" class="merge-heading-input" id="mergeHeadingInput" placeholder="Custom merged heading (optional)" style="flex:1"/>
+        <button class="btn btn-merge btn-sm" onclick="applyMerge()">Merge Selected</button>
+        <button class="btn btn-ghost btn-sm" onclick="cancelMerge()">Cancel</button>
+      </div>
+    </div>
+
+    <div class="drop-zone empty-hint" id="dropZone"
+         ondragover="onDragOver(event)"
+         ondragleave="onDragLeave(event)"
+         ondrop="onDrop(event)">
+    </div>
+
+  </section>
+</div>
+
+<!-- Sessions side panel -->
+<div class="overlay" id="overlay" onclick="closeSessions()"></div>
+<aside class="sessions-panel" id="sessionsPanel">
+  <div class="sessions-panel-header">
+    <h2>Saved Sessions</h2>
+    <button class="btn btn-ghost btn-sm" onclick="closeSessions()">✕ Close</button>
+  </div>
+  <div class="sessions-list" id="sessionsList">
+    <div class="loading">Loading…</div>
+  </div>
+</aside>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon">✓</span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+const API = 'http://localhost:5000/api';
+
+// ── STATE ──────────────────────────────────────
+let allModules   = [];     // modules loaded from API
+let sessionItems = [];     // { id, is_merge, module_ids, heading, content, modules[] }
+let dragging     = null;   // module_id being dragged from pool
+let draggingIdx  = null;   // index being dragged within drop zone
+let mergeMode    = false;
+let mergeSelected= new Set(); // indices in sessionItems selected for merge
+let editingId    = null;   // session id being edited (null = new)
+
+// ── INIT ──────────────────────────────────────
+(async () => {
+  try {
+    const r = await fetch(`${API}/classes`);
+    const classes = await r.json();
+    const sel = document.getElementById('classSelect');
+    classes.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      sel.appendChild(o);
+    });
+  } catch(e){ showToast('Cannot reach API. Is Flask running?', 'error'); }
+})();
+
+// ── CLASS CHANGE ──────────────────────────────
+async function onClassChange(){
+  const cls = document.getElementById('classSelect').value;
+  const list = document.getElementById('chapterList');
+  list.innerHTML = '<div class="loading">Loading chapters…</div>';
+  if(!cls){ list.innerHTML='<div class="loading">← Select a class first</div>'; return; }
+
+  const r = await fetch(`${API}/chapters?class_name=${encodeURIComponent(cls)}`);
+  const chapters = await r.json();
+  list.innerHTML = '';
+  if(!chapters.length){ list.innerHTML='<div class="loading">No chapters found</div>'; return; }
+
+  chapters.forEach(ch => {
+    const lbl = document.createElement('label');
+    lbl.innerHTML = `<input type="checkbox" value="${ch.chapter_number}"/>
+      <span>${ch.chapter_title || ('Chapter ' + ch.chapter_number)}</span>`;
+    list.appendChild(lbl);
+  });
+}
+
+// ── LOAD MODULES ─────────────────────────────
+async function loadModules(){
+  const cls = document.getElementById('classSelect').value;
+  const checked = [...document.querySelectorAll('#chapterList input:checked')].map(i=>i.value);
+  if(!cls || !checked.length){ showToast('Select a class and at least one chapter', 'error'); return; }
+
+  const params = new URLSearchParams({ class_name: cls });
+  checked.forEach(c => params.append('chapter_number', c));
+
+  const pool = document.getElementById('modulePool');
+  pool.innerHTML = '<div class="loading">Loading…</div>';
+  const r = await fetch(`${API}/modules?${params}`);
+  allModules = await r.json();
+  renderPool();
+}
+
+function renderPool(){
+  const pool = document.getElementById('modulePool');
+  pool.innerHTML = '';
+
+  // group by chapter
+  const byChapter = {};
+  allModules.forEach(m => {
+    if(!byChapter[m.chapter_number]) byChapter[m.chapter_number] = [];
+    byChapter[m.chapter_number].push(m);
+  });
+
+  Object.entries(byChapter).forEach(([ch, mods]) => {
+    const lbl = document.createElement('div');
+    lbl.className = 'pool-label';
+    lbl.textContent = `Chapter ${ch}`;
+    pool.appendChild(lbl);
+
+    mods.forEach(m => {
+      const card = makePoolCard(m);
+      pool.appendChild(card);
+    });
+  });
+
+  if(!allModules.length) pool.innerHTML='<div class="loading">No modules found</div>';
+}
+
+function makePoolCard(m){
+  const div = document.createElement('div');
+  div.className = 'mod-card';
+  div.draggable = true;
+  div.dataset.moduleId = m.module_id;
+  div.innerHTML = `
+    <span class="drag-handle">⠿</span>
+    <div class="mod-info">
+      <div class="mod-num">#${m.module_number}</div>
+      <div class="mod-head" title="${esc(m.heading||'')}">${esc(m.heading||'(no heading)')}</div>
+      <div class="mod-chapter">Ch.${m.chapter_number}</div>
+    </div>
+    <div class="mod-actions">
+      <button class="btn-icon" title="Add to session" onclick="addModuleToSession('${m.module_id}')">+</button>
+    </div>`;
+  div.addEventListener('dragstart', e => {
+    dragging = m.module_id; draggingIdx = null;
+    e.dataTransfer.effectAllowed = 'copy';
+    div.classList.add('dragging');
+  });
+  div.addEventListener('dragend', () => div.classList.remove('dragging'));
+  return div;
+}
+
+// ── ADD MODULE ────────────────────────────────
+function addModuleToSession(module_id){
+  const m = allModules.find(x=>x.module_id===module_id);
+  if(!m) return;
+  sessionItems.push({ id: uid(), is_merge:false, module_ids:[module_id], heading:m.heading, content:m.content, modules:[m] });
+  renderDropZone();
+}
+
+// ── DROP ZONE DRAG ────────────────────────────
+function onDragOver(e){
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-active');
+  e.dataTransfer.dropEffect = 'copy';
+}
+function onDragLeave(e){ e.currentTarget.classList.remove('drag-active'); }
+function onDrop(e){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-active');
+
+  if(dragging !== null && draggingIdx === null){
+    // dragged from pool
+    addModuleToSession(dragging);
+    dragging = null;
+  }
+}
+
+// ── REORDER IN DROP ZONE ──────────────────────
+function startReorder(e, idx){
+  draggingIdx = idx; dragging = null;
+  e.dataTransfer.effectAllowed = 'move';
+}
+function dropOnCard(e, targetIdx){
+  e.preventDefault(); e.stopPropagation();
+  if(draggingIdx === null) return;
+  const moved = sessionItems.splice(draggingIdx, 1)[0];
+  sessionItems.splice(targetIdx, 0, moved);
+  draggingIdx = null;
+  renderDropZone();
+}
+
+// ── RENDER DROP ZONE ──────────────────────────
+function renderDropZone(){
+  const dz = document.getElementById('dropZone');
+  dz.classList.toggle('empty-hint', sessionItems.length===0);
+  dz.innerHTML = '';
+
+  sessionItems.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'session-card' + (item.is_merge ? ' is-merge' : '');
+    card.draggable = true;
+    card.ondragstart = e => startReorder(e, idx);
+    card.ondragover  = e => { e.preventDefault(); card.style.borderColor='var(--accent)'; };
+    card.ondragleave = ()=> card.style.borderColor='';
+    card.ondrop      = e => { card.style.borderColor=''; dropOnCard(e, idx); };
+
+    // merge select checkbox
+    const mergeCheck = mergeMode
+      ? `<input type="checkbox" ${mergeSelected.has(idx)?'checked':''} onchange="toggleMergeSelect(${idx},this.checked)"
+           style="accent-color:var(--merge);width:16px;height:16px;flex-shrink:0;margin-top:2px"/>`
+      : '';
+
+    const moduleIds_str = item.module_ids.join(', ');
+    card.innerHTML = `
+      ${mergeCheck}
+      <div class="pos">${idx+1}</div>
+      <div class="sc-info">
+        <div class="sc-heading">
+          ${item.is_merge?'<span class="merge-badge">MERGED</span>':''}
+          ${esc(item.heading||'(no heading)')}
+        </div>
+        <div class="sc-meta">
+          ${item.is_merge
+            ? `${item.module_ids.length} modules merged`
+            : `Module: ${moduleIds_str}`}
+        </div>
+      </div>
+      <div class="sc-actions">
+        ${item.is_merge ? `<button class="btn-icon btn-sm" title="Unmerge" onclick="unmergeItem(${idx})">↩</button>` : ''}
+        <button class="btn-icon btn-sm" title="Move up"   onclick="moveItem(${idx},-1)">↑</button>
+        <button class="btn-icon btn-sm" title="Move down" onclick="moveItem(${idx},1)">↓</button>
+        <button class="btn-icon btn-sm btn-danger" title="Remove" onclick="removeItem(${idx})">✕</button>
+      </div>`;
+    dz.appendChild(card);
+  });
+}
+
+// ── SESSION ITEM CONTROLS ─────────────────────
+function moveItem(idx, dir){
+  const ni = idx+dir;
+  if(ni<0||ni>=sessionItems.length) return;
+  [sessionItems[idx],sessionItems[ni]] = [sessionItems[ni],sessionItems[idx]];
+  renderDropZone();
+}
+function removeItem(idx){ sessionItems.splice(idx,1); renderDropZone(); }
+function unmergeItem(idx){
+  const item = sessionItems[idx];
+  const expanded = item.modules.map(m=>({ id:uid(), is_merge:false, module_ids:[m.module_id], heading:m.heading, content:m.content, modules:[m] }));
+  sessionItems.splice(idx,1,...expanded);
+  renderDropZone();
+}
+
+// ── MERGE MODE ────────────────────────────────
+function toggleMergeMode(){
+  mergeMode = !mergeMode;
+  mergeSelected.clear();
+  document.getElementById('mergeModeBar').classList.toggle('open', mergeMode);
+  document.getElementById('mergeToggleBtn').textContent = mergeMode ? '✕ Exit Merge Mode' : '⊕ Merge Mode';
+  renderDropZone();
+}
+function cancelMerge(){ mergeMode=false; mergeSelected.clear(); toggleMergeMode(); toggleMergeMode(); toggleMergeMode(); mergeMode=false; document.getElementById('mergeModeBar').classList.remove('open'); document.getElementById('mergeToggleBtn').textContent='⊕ Merge Mode'; renderDropZone(); }
+function toggleMergeSelect(idx, checked){
+  if(checked) mergeSelected.add(idx); else mergeSelected.delete(idx);
+}
+function applyMerge(){
+  if(mergeSelected.size < 2){ showToast('Select at least 2 modules to merge', 'error'); return; }
+  const indices = [...mergeSelected].sort((a,b)=>a-b);
+  const items   = indices.map(i => sessionItems[i]);
+  const customHeading = document.getElementById('mergeHeadingInput').value.trim();
+
+  const mergedModules = items.flatMap(i => i.modules);
+  const mergedContent = items.map(i => (i.heading?`### ${i.heading}\n\n`:'')+i.content).join('\n\n---\n\n');
+  const mergedHeading = customHeading || items.map(i=>i.heading).filter(Boolean).join(' + ');
+  const mergedIds     = items.flatMap(i => i.module_ids);
+
+  const merged = { id:uid(), is_merge:true, module_ids:mergedIds, heading:mergedHeading, content:mergedContent, modules:mergedModules };
+
+  // replace first index slot with merged, remove rest
+  const first = indices[0];
+  sessionItems[first] = merged;
+  for(let i=indices.length-1; i>=1; i--) sessionItems.splice(indices[i],1);
+
+  mergeSelected.clear();
+  document.getElementById('mergeHeadingInput').value = '';
+  showToast(`Merged ${items.length} modules into one`, 'success');
+  renderDropZone();
+}
+
+// ── SAVE SESSION ──────────────────────────────
+async function saveSession(){
+  const name = document.getElementById('sessionName').value.trim();
+  if(!name){ showToast('Please enter a session name', 'error'); return; }
+  if(!sessionItems.length){ showToast('Add at least one module', 'error'); return; }
+
+  const payload = {
+    session_name: name,
+    description:  document.getElementById('sessionDesc').value.trim(),
+    class_name:   document.getElementById('classSelect').value,
+    items: sessionItems.map((item, i) => ({
+      position:       i,
+      is_merge:       item.is_merge,
+      module_ids:     item.module_ids,
+      merged_heading: item.heading,
+      merged_content: item.content,
+    }))
+  };
+
+  const method = editingId ? 'PUT' : 'POST';
+  const url    = editingId ? `${API}/sessions/${editingId}` : `${API}/sessions`;
+
+  const r = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+  if(r.ok){
+    showToast(`Session "${name}" saved!`, 'success');
+    editingId = (await r.json()).id;
+  } else {
+    showToast('Save failed. Check the console.', 'error');
+  }
+}
+
+function clearSession(){
+  sessionItems = [];
+  editingId = null;
+  document.getElementById('sessionName').value = '';
+  document.getElementById('sessionDesc').value = '';
+  renderDropZone();
+}
+
+// ── SESSIONS PANEL ────────────────────────────
+async function openSessions(){
+  document.getElementById('sessionsPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  const list = document.getElementById('sessionsList');
+  list.innerHTML = '<div class="loading">Loading…</div>';
+  const r = await fetch(`${API}/sessions`);
+  const sessions = await r.json();
+  list.innerHTML = '';
+  if(!sessions.length){ list.innerHTML='<div class="loading">No sessions yet</div>'; return; }
+  sessions.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'session-item';
+    div.innerHTML = `
+      <h3>${esc(s.session_name)}</h3>
+      <div class="si-meta">
+        <span>${s.class_name||'—'}</span>
+        <span>${s.items.length} items</span>
+        <span>${new Date(s.created_at).toLocaleDateString()}</span>
+      </div>
+      <div class="si-actions">
+        <button class="btn btn-ghost btn-sm" onclick="loadSession('${s.id}')">Load</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSession('${s.id}',this)">Delete</button>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+function closeSessions(){
+  document.getElementById('sessionsPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+async function loadSession(id){
+  const r = await fetch(`${API}/sessions/${id}`);
+  const s = await r.json();
+
+  document.getElementById('sessionName').value = s.session_name;
+  document.getElementById('sessionDesc').value  = s.description||'';
+  editingId = s.id;
+
+  // re-hydrate items with module data
+  const allIds = s.items.flatMap(i=>i.module_ids);
+  const params = new URLSearchParams();
+  // load all modules for the session class/chapter
+  params.set('class_name', s.class_name||'');
+  const mods = s.class_name ? await (await fetch(`${API}/modules?${params}`)).json() : [];
+  const modMap = Object.fromEntries(mods.map(m=>[m.module_id,m]));
+
+  sessionItems = s.items.map(item => {
+    const modules = item.module_ids.map(id=>modMap[id]||{module_id:id,heading:id,content:''});
+    return { id:uid(), is_merge:item.is_merge, module_ids:item.module_ids, heading:item.merged_heading, content:item.merged_content, modules };
+  });
+  renderDropZone();
+  closeSessions();
+  showToast(`Loaded "${s.session_name}"`, 'success');
+}
+
+async function deleteSession(id, btn){
+  if(!confirm('Delete this session?')) return;
+  const r = await fetch(`${API}/sessions/${id}`, {method:'DELETE'});
+  if(r.ok){ btn.closest('.session-item').remove(); showToast('Deleted','success'); }
+}
+
+// ── UTILS ─────────────────────────────────────
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function uid(){ return Math.random().toString(36).slice(2) }
+
+let toastTimer;
+function showToast(msg, type='success'){
+  const t=document.getElementById('toast'), m=document.getElementById('toastMsg'), i=document.getElementById('toastIcon');
+  t.className='toast '+type; m.textContent=msg; i.textContent=type==='success'?'✓':'✕';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>

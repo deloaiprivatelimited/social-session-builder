@@ -3,3 +3,4 @@ flask-cors>=4.0
 mongoengine>=0.27
 certifi
 gunicorn
+pymongo

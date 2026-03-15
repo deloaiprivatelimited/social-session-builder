@@ -22,7 +22,7 @@ CORS(app)
 # DB CONNECTION
 # ─────────────────────────────────────────────
 
-MONGO_URI = "mongodb+srv://user:user@cluster0.rgocxdb.mongodb.net/education_db?retryWrites=true&w=majority"
+MONGO_URI = "mongodb+srv://user:user@cluster0.rgocxdb.mongodb.net/education_db_2?retryWrites=true&w=majority"
 
 connect(host=MONGO_URI, tlsCAFile=certifi.where())
 

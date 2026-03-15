@@ -18,38 +18,23 @@ body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
 /* ── HEADER ── */
 header{
-  flex-shrink:0;
-  display:flex;align-items:center;gap:14px;
-  padding:18px 28px;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  z-index:100;
+  flex-shrink:0;display:flex;align-items:center;gap:14px;
+  padding:18px 28px;background:var(--surface);
+  border-bottom:1px solid var(--border);z-index:100;
 }
 header .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--accent);letter-spacing:-.5px}
 header .logo span{color:var(--text)}
 header nav{margin-left:auto;display:flex;gap:8px}
 
-/* ── MAIN GRID: exactly fills remaining height, no page scroll ── */
-.main{
-  display:grid;
-  grid-template-columns:340px 1fr;
-  flex:1;           /* fills body minus header */
-  min-height:0;     /* critical for flex children */
-  overflow:hidden;
-}
+.main{display:grid;grid-template-columns:340px 1fr;flex:1;min-height:0;overflow:hidden}
 
-/* ── SIDEBAR: full height flex column, only .module-pool scrolls ── */
+/* ── SIDEBAR ── */
 .sidebar{
-  background:var(--surface);
-  border-right:1px solid var(--border);
-  display:flex;
-  flex-direction:column;
-  height:100%;
-  overflow:hidden;   /* no outer scroll */
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;height:100%;overflow:hidden;
 }
 .sidebar-header{flex-shrink:0;padding:16px 18px 12px;border-bottom:1px solid var(--border)}
 .sidebar-header h2{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-
 .filter-row{flex-shrink:0;display:flex;flex-direction:column;gap:8px;padding:14px 18px;border-bottom:1px solid var(--border)}
 
 select,input[type=text]{
@@ -60,14 +45,9 @@ select,input[type=text]{
 select:focus,input:focus{border-color:var(--accent)}
 select option{background:var(--card)}
 
-/* Chapter list: capped height, its own scroll */
 .chapter-list{
-  flex-shrink:0;
-  padding:10px 18px;
-  display:flex;flex-direction:column;gap:6px;
-  max-height:170px;
-  overflow-y:auto;
-  border-bottom:1px solid var(--border);
+  flex-shrink:0;padding:10px 18px;display:flex;flex-direction:column;gap:6px;
+  max-height:170px;overflow-y:auto;border-bottom:1px solid var(--border);
 }
 .chapter-list label{display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer;padding:5px 6px;border-radius:var(--r2);transition:background .15s}
 .chapter-list label:hover{background:var(--card)}
@@ -75,20 +55,12 @@ select option{background:var(--card)}
 
 .load-btn-row{flex-shrink:0;padding:10px 18px;border-bottom:1px solid var(--border)}
 
-/* ★ THE FIX: module pool fills ALL remaining sidebar height and scrolls alone ★ */
-.module-pool{
-  flex:1;
-  min-height:0;      /* must have this — flex children won't shrink below content otherwise */
-  overflow-y:auto;
-  padding:10px 12px;
-  display:flex;flex-direction:column;gap:5px;
-}
+.module-pool{flex:1;min-height:0;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:5px}
 .pool-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:4px 6px;font-family:'DM Mono',monospace}
 
 /* ── MODULE CARD ── */
 .mod-card{
-  flex-shrink:0;
-  background:var(--card);border:1px solid var(--border);border-radius:var(--r2);
+  flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);
   padding:9px 12px;cursor:grab;user-select:none;
   display:flex;align-items:flex-start;gap:8px;
   transition:border-color .15s,box-shadow .15s;
@@ -103,27 +75,30 @@ select option{background:var(--card)}
 .mod-card .mod-actions{display:flex;gap:4px;flex-shrink:0}
 .merge-badge{font-size:.65rem;background:var(--merge);color:#fff;border-radius:3px;padding:1px 5px;font-family:'DM Mono',monospace;display:inline-block;margin-right:4px}
 
-/* ── BUILDER (right): full height flex column, only drop-zone scrolls ── */
-.builder{
-  display:flex;flex-direction:column;
-  height:100%;
-  overflow:hidden;
-  background:var(--bg);
-}
+/* ── BUILDER ── */
+.builder{display:flex;flex-direction:column;height:100%;overflow:hidden;background:var(--bg)}
 .builder-top{
-  flex-shrink:0;
-  padding:18px 24px 14px;
-  border-bottom:1px solid var(--border);
-  background:var(--surface);
-  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  flex-shrink:0;padding:18px 24px 14px;border-bottom:1px solid var(--border);
+  background:var(--surface);display:flex;align-items:center;gap:12px;flex-wrap:wrap;
 }
 .builder-top h1{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;flex:1}
+
 .session-input-row{display:flex;gap:10px;align-items:center;width:100%}
 .session-input-row input{flex:1}
-.session-input-row textarea{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--r2);font-family:inherit;font-size:.88rem;resize:none;outline:none;min-height:38px}
-.session-input-row textarea:focus{border-color:var(--accent)}
 
-/* Merge bar: fixed, doesn't scroll */
+/* category dropdown — same height as input but slightly narrower */
+.session-input-row .cat-select{
+  flex:0 0 220px;
+  background:var(--card);border:1px solid var(--border);
+  color:var(--text);padding:9px 12px;border-radius:var(--r2);
+  font-size:.88rem;font-family:inherit;outline:none;
+  transition:border-color .2s;
+  /* red tint when nothing selected */
+}
+.session-input-row .cat-select.empty{border-color:var(--danger)}
+.session-input-row .cat-select:focus{border-color:var(--accent)}
+.session-input-row .cat-select option{background:var(--card)}
+
 .merge-bar-wrap{flex-shrink:0;padding:0 16px}
 .merge-select-zone{
   background:var(--merge-bg);border:1.5px dashed var(--merge);
@@ -135,26 +110,16 @@ select option{background:var(--card)}
 .merge-heading-input{background:var(--card);border:1px solid var(--merge);border-radius:var(--r2);padding:8px 12px;color:var(--text);font-size:.85rem;width:100%;outline:none;font-family:inherit}
 .merge-heading-input:focus{border-color:#a07de0}
 
-/* ★ THE FIX: drop-zone fills remaining builder height, scrolls alone ★ */
-.drop-zone{
-  flex:1;
-  min-height:0;
-  overflow-y:auto;
-  padding:16px;
-  display:flex;flex-direction:column;gap:8px;
-}
+.drop-zone{flex:1;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
 .drop-zone.empty-hint::after{
-  content:'Drop modules here ↑';
-  display:flex;align-items:center;justify-content:center;
-  color:var(--muted);font-size:.9rem;
-  border:2px dashed var(--border);border-radius:var(--r);
+  content:'Drop modules here ↑';display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:.9rem;border:2px dashed var(--border);border-radius:var(--r);
   padding:48px;margin:8px 0;opacity:.5;
 }
 .drop-zone.drag-active{border:2px dashed var(--accent);background:#f0a5000a;border-radius:var(--r)}
 
 .session-card{
-  flex-shrink:0;
-  background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:var(--r);
   padding:10px 14px;display:flex;align-items:flex-start;gap:10px;
   transition:border-color .15s,box-shadow .15s;
 }
@@ -188,6 +153,49 @@ select option{background:var(--card)}
 .session-item h3{font-size:.9rem;font-weight:600;margin-bottom:4px}
 .session-item .si-meta{font-size:.78rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
 .session-item .si-actions{display:flex;gap:6px;margin-top:8px}
+
+/* ── CONTENT PREVIEW MODAL ── */
+.modal-backdrop{
+  position:fixed;inset:0;background:#00000080;z-index:300;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.modal-backdrop.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  width:min(700px,92vw);max-height:80vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 24px 80px #000a;
+  transform:translateY(16px);transition:transform .2s;
+}
+.modal-backdrop.open .modal{transform:translateY(0)}
+.modal-header{flex-shrink:0;padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px}
+.modal-header-info{flex:1;min-width:0}
+.modal-header-info h2{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:4px;line-height:1.3}
+.modal-header-info .modal-meta{font-size:.78rem;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.modal-body{flex:1;min-height:0;overflow-y:auto;padding:20px 24px}
+.content-render{font-size:.9rem;line-height:1.75;color:var(--text)}
+.content-render h1,.content-render h2,.content-render h3{font-family:'Syne',sans-serif;font-weight:700;margin:1.2em 0 .5em;color:var(--accent)}
+.content-render h1{font-size:1.2rem}.content-render h2{font-size:1.05rem}
+.content-render h3{font-size:.95rem;color:#c8a0f0}
+.content-render p{margin:.5em 0}
+.content-render ul,.content-render ol{margin:.5em 0 .5em 1.4em}
+.content-render li{margin:.25em 0}
+.content-render strong{color:#fff;font-weight:600}
+.content-render em{color:#c8d0e0;font-style:italic}
+.content-render code{background:var(--card2);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-family:'DM Mono',monospace;font-size:.85em;color:#79c0ff}
+.content-render pre{background:var(--card2);border:1px solid var(--border);border-radius:var(--r2);padding:14px;overflow-x:auto;margin:.75em 0}
+.content-render pre code{background:none;border:none;padding:0}
+.content-render blockquote{border-left:3px solid var(--accent);padding-left:14px;color:var(--muted);margin:.75em 0;font-style:italic}
+.content-render hr{border:none;border-top:1px solid var(--border);margin:1.2em 0}
+.content-render table{width:100%;border-collapse:collapse;margin:.75em 0;font-size:.88rem}
+.content-render th{background:var(--card2);padding:8px 12px;text-align:left;border:1px solid var(--border);font-weight:600}
+.content-render td{padding:8px 12px;border:1px solid var(--border)}
+.content-render tr:nth-child(even) td{background:#ffffff05}
+.content-empty{color:var(--muted);font-style:italic;text-align:center;padding:40px;font-size:.9rem}
+.modal-footer{flex-shrink:0;padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.modal-nav{display:flex;gap:6px}
+.modal-nav-info{font-size:.8rem;color:var(--muted);font-family:'DM Mono',monospace}
 
 /* ── TOAST ── */
 .toast{position:fixed;bottom:24px;right:24px;z-index:500;background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:12px 18px;font-size:.88rem;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px #0008;transform:translateY(100px);opacity:0;transition:all .3s;pointer-events:none}
@@ -233,7 +241,6 @@ select option{background:var(--card)}
       <button class="btn btn-ghost btn-sm" style="width:100%" onclick="loadModules()">Load Modules</button>
     </div>
 
-    <!-- scrolls independently -->
     <div class="module-pool" id="modulePool">
       <div class="loading">Select class + chapters, then click Load Modules</div>
     </div>
@@ -244,10 +251,23 @@ select option{background:var(--card)}
 
     <div class="builder-top">
       <h1>🗂 Session Builder</h1>
+
+      <!-- Session name + mandatory category dropdown -->
       <div class="session-input-row">
         <input type="text" id="sessionName" placeholder="Session name e.g. Ancient History Ch3"/>
-        <textarea id="sessionDesc" placeholder="Description (optional)" rows="1"></textarea>
+        <select id="sessionDesc" class="cat-select empty" onchange="onCatChange(this)">
+          <option value="">Select Category… *</option>
+          <option>Medieval History</option>
+          <option>Ancient History</option>
+          <option>Modern History</option>
+          <option>Karnataka History</option>
+          <option>World History</option>
+          <option>Economics</option>
+          <option>Sociology</option>
+          <option>Geography</option>
+        </select>
       </div>
+
       <div style="display:flex;gap:8px;margin-left:auto">
         <button class="btn btn-ghost btn-sm" onclick="clearSession()">🗑 Clear</button>
         <button class="btn btn-primary btn-sm" onclick="saveSession()">💾 Save Session</button>
@@ -265,7 +285,6 @@ select option{background:var(--card)}
       </div>
     </div>
 
-    <!-- scrolls independently -->
     <div class="drop-zone empty-hint" id="dropZone"
          ondragover="onDragOver(event)"
          ondragleave="onDragLeave(event)"
@@ -273,6 +292,34 @@ select option{background:var(--card)}
     </div>
 
   </section>
+</div>
+
+<!-- ── CONTENT PREVIEW MODAL ── -->
+<div class="modal-backdrop" id="previewBackdrop" onclick="closePreview(event)">
+  <div class="modal" id="previewModal">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <h2 id="previewTitle">Module Title</h2>
+        <div class="modal-meta">
+          <span id="previewNum"></span>
+          <span id="previewChapter"></span>
+          <span id="previewClass"></span>
+        </div>
+      </div>
+      <button class="btn-icon" onclick="closePreviewDirect()" style="font-size:1rem">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="content-render" id="previewContent"></div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-nav">
+        <button class="btn btn-ghost btn-sm" onclick="previewNav(-1)">← Prev</button>
+        <button class="btn btn-ghost btn-sm" onclick="previewNav(1)">Next →</button>
+      </div>
+      <span class="modal-nav-info" id="previewNavInfo"></span>
+      <button class="btn btn-primary btn-sm" onclick="addFromPreview()">+ Add to Session</button>
+    </div>
+  </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closeSessions()"></div>
@@ -294,7 +341,9 @@ const API = 'https://web-production-a898.up.railway.app/api';
 
 let allModules=[], sessionItems=[], dragging=null, draggingIdx=null;
 let mergeMode=false, mergeSelected=new Set(), editingId=null;
+let previewIdx=0, previewList=[];
 
+// ── INIT ──
 (async()=>{
   try{
     const r=await fetch(`${API}/classes`);
@@ -304,6 +353,12 @@ let mergeMode=false, mergeSelected=new Set(), editingId=null;
   }catch(e){showToast('Cannot reach API.','error');}
 })();
 
+// remove red border once user picks a category
+function onCatChange(sel){
+  sel.classList.toggle('empty', sel.value==='');
+}
+
+// ── CLASS / CHAPTERS ──
 async function onClassChange(){
   const cls=document.getElementById('classSelect').value;
   const list=document.getElementById('chapterList');
@@ -320,6 +375,7 @@ async function onClassChange(){
   });
 }
 
+// ── LOAD MODULES ──
 async function loadModules(){
   const cls=document.getElementById('classSelect').value;
   const checked=[...document.querySelectorAll('#chapterList input:checked')].map(i=>i.value);
@@ -330,6 +386,7 @@ async function loadModules(){
   pool.innerHTML='<div class="loading">Loading…</div>';
   const r=await fetch(`${API}/modules?${params}`);
   allModules=await r.json();
+  previewList=allModules;
   renderPool();
 }
 
@@ -348,24 +405,96 @@ function renderPool(){
 function makePoolCard(m){
   const div=document.createElement('div');
   div.className='mod-card';div.draggable=true;div.dataset.moduleId=m.module_id;
-  div.innerHTML=`<span class="drag-handle">⠿</span>
+  div.innerHTML=`
+    <span class="drag-handle">⠿</span>
     <div class="mod-info">
       <div class="mod-num">#${m.module_number}</div>
       <div class="mod-head" title="${esc(m.heading||'')}">${esc(m.heading||'(no heading)')}</div>
       <div class="mod-chapter">Ch.${m.chapter_number}</div>
     </div>
-    <div class="mod-actions"><button class="btn-icon" onclick="addModuleToSession('${m.module_id}')">+</button></div>`;
+    <div class="mod-actions">
+      <button class="btn-icon" title="Preview content" onclick="openPreview('${m.module_id}');event.stopPropagation()" style="font-size:.8rem">👁</button>
+      <button class="btn-icon" title="Add to session"  onclick="addModuleToSession('${m.module_id}');event.stopPropagation()">+</button>
+    </div>`;
   div.addEventListener('dragstart',e=>{dragging=m.module_id;draggingIdx=null;e.dataTransfer.effectAllowed='copy';div.classList.add('dragging');});
   div.addEventListener('dragend',()=>div.classList.remove('dragging'));
   return div;
 }
 
+// ── PREVIEW MODAL ──
+function openPreview(module_id){
+  const idx=previewList.findIndex(m=>m.module_id===module_id);
+  if(idx===-1)return;
+  previewIdx=idx;
+  renderPreview();
+  document.getElementById('previewBackdrop').classList.add('open');
+}
+function renderPreview(){
+  const m=previewList[previewIdx];
+  if(!m)return;
+  document.getElementById('previewTitle').textContent=m.heading||'(no heading)';
+  document.getElementById('previewNum').textContent=`#${m.module_number}`;
+  document.getElementById('previewChapter').textContent=`Ch. ${m.chapter_number}${m.chapter_title?' — '+m.chapter_title:''}`;
+  document.getElementById('previewClass').textContent=m.class_name||'';
+  document.getElementById('previewNavInfo').textContent=`${previewIdx+1} / ${previewList.length}`;
+  const contentEl=document.getElementById('previewContent');
+  const raw=m.content||'';
+  if(!raw.trim()){contentEl.innerHTML='<div class="content-empty">No content available for this module.</div>';}
+  else{contentEl.innerHTML=renderMarkdown(raw);}
+}
+function closePreview(e){if(e.target===document.getElementById('previewBackdrop'))closePreviewDirect();}
+function closePreviewDirect(){document.getElementById('previewBackdrop').classList.remove('open');}
+function previewNav(dir){
+  const next=previewIdx+dir;
+  if(next<0||next>=previewList.length)return;
+  previewIdx=next;
+  document.querySelector('.modal-body').scrollTop=0;
+  renderPreview();
+}
+function addFromPreview(){
+  const m=previewList[previewIdx];if(!m)return;
+  addModuleToSession(m.module_id);
+  showToast(`Added "${m.heading||m.module_id}" to session`,'success');
+}
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('previewBackdrop').classList.contains('open'))return;
+  if(e.key==='Escape')closePreviewDirect();
+  if(e.key==='ArrowLeft')previewNav(-1);
+  if(e.key==='ArrowRight')previewNav(1);
+});
+
+function renderMarkdown(md){
+  let html=md
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/_(.+?)_/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/^\s*[-*] (.+)$/gm,'<li>$1</li>')
+    .replace(/^\s*\d+\. (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g,m=>`<ul>${m}</ul>`)
+    .split(/\n{2,}/).map(block=>{
+      block=block.trim();if(!block)return'';
+      if(/^<(h[1-3]|ul|ol|hr|blockquote|pre)/.test(block))return block;
+      return`<p>${block.replace(/\n/g,'<br>')}</p>`;
+    }).join('\n');
+  return html;
+}
+
+// ── ADD MODULE ──
 function addModuleToSession(module_id){
   const m=allModules.find(x=>x.module_id===module_id);if(!m)return;
   sessionItems.push({id:uid(),is_merge:false,module_ids:[module_id],heading:m.heading,content:m.content,modules:[m]});
   renderDropZone();
 }
 
+// ── DRAG & DROP ──
 function onDragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-active');e.dataTransfer.dropEffect='copy';}
 function onDragLeave(e){e.currentTarget.classList.remove('drag-active');}
 function onDrop(e){
@@ -378,6 +507,7 @@ function dropOnCard(e,targetIdx){
   const moved=sessionItems.splice(draggingIdx,1)[0];sessionItems.splice(targetIdx,0,moved);draggingIdx=null;renderDropZone();
 }
 
+// ── RENDER DROP ZONE ──
 function renderDropZone(){
   const dz=document.getElementById('dropZone');
   dz.classList.toggle('empty-hint',sessionItems.length===0);
@@ -417,6 +547,7 @@ function unmergeItem(idx){
   sessionItems.splice(idx,1,...expanded);renderDropZone();
 }
 
+// ── MERGE ──
 function toggleMergeMode(){
   mergeMode=!mergeMode;mergeSelected.clear();
   document.getElementById('mergeModeBar').classList.toggle('open',mergeMode);
@@ -448,12 +579,18 @@ function applyMerge(){
   showToast(`Merged ${items.length} modules`,'success');renderDropZone();
 }
 
+// ── SAVE SESSION ──
 async function saveSession(){
   const name=document.getElementById('sessionName').value.trim();
+  const category=document.getElementById('sessionDesc').value;
+
   if(!name){showToast('Enter a session name','error');return;}
+  if(!category){showToast('Please select a category','error');document.getElementById('sessionDesc').classList.add('empty');return;}
   if(!sessionItems.length){showToast('Add at least one module','error');return;}
+
   const payload={
-    session_name:name,description:document.getElementById('sessionDesc').value.trim(),
+    session_name:name,
+    description:category,
     class_name:document.getElementById('classSelect').value,
     items:sessionItems.map((item,i)=>({position:i,is_merge:item.is_merge,module_ids:item.module_ids,merged_heading:item.heading,merged_content:item.content}))
   };
@@ -464,8 +601,14 @@ async function saveSession(){
   else showToast('Save failed','error');
 }
 
-function clearSession(){sessionItems=[];editingId=null;document.getElementById('sessionName').value='';document.getElementById('sessionDesc').value='';renderDropZone();}
+function clearSession(){
+  sessionItems=[];editingId=null;
+  document.getElementById('sessionName').value='';
+  const cat=document.getElementById('sessionDesc');cat.value='';cat.classList.add('empty');
+  renderDropZone();
+}
 
+// ── SESSIONS PANEL ──
 async function openSessions(){
   document.getElementById('sessionsPanel').classList.add('open');
   document.getElementById('overlay').classList.add('open');
@@ -478,7 +621,12 @@ async function openSessions(){
   sessions.forEach(s=>{
     const div=document.createElement('div');div.className='session-item';
     div.innerHTML=`<h3>${esc(s.session_name)}</h3>
-      <div class="si-meta"><span>${s.class_name||'—'}</span><span>${s.items.length} items</span><span>${new Date(s.created_at).toLocaleDateString()}</span></div>
+      <div class="si-meta">
+        <span>${s.class_name||'—'}</span>
+        ${s.description?`<span>📂 ${esc(s.description)}</span>`:''}
+        <span>${s.items.length} items</span>
+        <span>${new Date(s.created_at).toLocaleDateString()}</span>
+      </div>
       <div class="si-actions">
         <button class="btn btn-ghost btn-sm" onclick="loadSession('${s.id}')">Load</button>
         <button class="btn btn-danger btn-sm" onclick="deleteSession('${s.id}',this)">Delete</button>
@@ -491,7 +639,10 @@ function closeSessions(){document.getElementById('sessionsPanel').classList.remo
 async function loadSession(id){
   const r=await fetch(`${API}/sessions/${id}`);const s=await r.json();
   document.getElementById('sessionName').value=s.session_name;
-  document.getElementById('sessionDesc').value=s.description||'';
+  // restore category dropdown
+  const cat=document.getElementById('sessionDesc');
+  cat.value=s.description||'';
+  cat.classList.toggle('empty',!s.description);
   editingId=s.id;
   const params=new URLSearchParams({class_name:s.class_name||''});
   const mods=s.class_name?await(await fetch(`${API}/modules?${params}`)).json():[];
@@ -508,6 +659,7 @@ async function deleteSession(id,btn){
   if(r.ok){btn.closest('.session-item').remove();showToast('Deleted','success');}
 }
 
+// ── UTILS ──
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function uid(){return Math.random().toString(36).slice(2)}
 let toastTimer;
